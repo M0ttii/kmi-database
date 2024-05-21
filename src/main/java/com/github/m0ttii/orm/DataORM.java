@@ -4,6 +4,8 @@ import com.github.m0ttii.DatabaseConnection;
 import com.github.m0ttii.annotations.Column;
 import com.github.m0ttii.annotations.Entity;
 import com.github.m0ttii.annotations.Id;
+import com.github.m0ttii.orm.query.FindAllQuery;
+import com.github.m0ttii.orm.query.FindByIdQuery;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -109,39 +111,8 @@ public class DataORM<T> {
     }
 
     //Finds an object by id
-    public T findById(int id) throws SQLException, ReflectiveOperationException {
-        String tableName = getTableName();
-        Field[] fields = type.getDeclaredFields();
-        StringBuilder columns = new StringBuilder();
-        String idColumn = null;
-        for (Field field : fields) {
-            columns.append(getColumnName(field)).append(",");
-            if (field.isAnnotationPresent(Id.class)) {
-                idColumn = getColumnName(field);
-            }
-        }
-        columns.setLength(columns.length() - 1);
-
-        if (idColumn == null) {
-            throw new IllegalStateException("No ID column found");
-        }
-
-        String sql = "SELECT " + columns + " FROM " + tableName + " WHERE " + idColumn + " = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                T obj = type.getDeclaredConstructor().newInstance();
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                    field.set(obj, rs.getObject(getColumnName(field)));
-                }
-                return obj;
-            }
-        }
-        return null;
+    public FindByIdQuery<T> findById(int id) {
+        return new FindByIdQuery<>(type, id);
     }
 
     //Updates an object
@@ -205,65 +176,7 @@ public class DataORM<T> {
         }
     }
 
-    public Query findAll() {
-        return new Query();
-    }
-
-    public class Query {
-        private final Map<String, Object> conditions = new HashMap<>();
-
-        public Query where(String fieldName, Object value){
-            conditions.put(fieldName, value);
-            return this;
-        }
-
-        public List<T> execute() throws SQLException {
-            List<T> list = new ArrayList<>();
-            String tableName = getTableName();
-            Field[] fields = type.getDeclaredFields();
-            StringBuilder columns = new StringBuilder();
-            StringBuilder whereClause = new StringBuilder(" WHERE ");
-            List<Object> values = new ArrayList<>();
-            for (Field field : fields) {
-                columns.append(getColumnName(field)).append(",");
-                if (conditions.containsKey(field.getName())) {
-                    whereClause.append(getColumnName(field)).append(" = ? AND ");
-                    values.add(conditions.get(field.getName()));
-                }
-            }
-            columns.setLength(columns.length() - 1); // Entfernt das letzte Komma
-            if (values.isEmpty()) {
-                whereClause.setLength(0); // Entfernt das WHERE, wenn keine Bedingungen vorhanden sind
-            } else {
-                whereClause.setLength(whereClause.length() - 5); // Entfernt das letzte " AND "
-            }
-
-            String sql = "SELECT " + columns + " FROM " + tableName + whereClause.toString();
-            try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                for (int i = 0; i < values.size(); i++) {
-                    pstmt.setObject(i + 1, values.get(i));
-                }
-                ResultSet rs = pstmt.executeQuery();
-
-                while (rs.next()) {
-                    T obj = type.getDeclaredConstructor().newInstance();
-                    for (Field field : fields) {
-                        field.setAccessible(true);
-                        field.set(obj, rs.getObject(getColumnName(field)));
-                    }
-                    list.add(obj);
-                }
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-            return list;
-        }
+    public FindAllQuery<T> findAll() {
+        return new FindAllQuery<>(type);
     }
 }
