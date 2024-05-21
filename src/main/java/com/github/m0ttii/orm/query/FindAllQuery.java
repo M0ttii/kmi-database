@@ -16,6 +16,11 @@ public class FindAllQuery<T> extends BaseQuery<T> {
         Field[] fields = type.getDeclaredFields();
         StringBuilder columns = new StringBuilder();
         StringBuilder whereClause = new StringBuilder();
+        StringBuilder joinClause = new StringBuilder();
+
+        for (String join : joins) {
+            joinClause.append(join).append(" ");
+        }
 
         for (Field field : fields) {
             columns.append(getColumnName(field)).append(",");
@@ -30,14 +35,7 @@ public class FindAllQuery<T> extends BaseQuery<T> {
             whereClause.insert(0, " WHERE ");
         }
 
-        return "SELECT " + columns + " FROM " + tableName + whereClause.toString();
+        return "SELECT " + columns + " FROM " + tableName + " " + joinClause.toString() + whereClause.toString();
     }
 
-    private String getTableName() {
-        if (type.isAnnotationPresent(Entity.class)) {
-            Entity entity = type.getAnnotation(Entity.class);
-            return entity.tableName();
-        }
-        return type.getSimpleName();
-    }
 }

@@ -2,6 +2,7 @@ package com.github.m0ttii.orm.query;
 
 import com.github.m0ttii.DatabaseConnection;
 import com.github.m0ttii.annotations.Column;
+import com.github.m0ttii.annotations.Entity;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -15,6 +16,7 @@ import java.util.List;
 public abstract class BaseQuery<T> {
     protected final Class<T> type;
     protected final HashMap<String, Object> conditions = new HashMap<>();
+    protected final List<String> joins = new ArrayList<>();
 
     public BaseQuery(Class<T> type) {
         this.type = type;
@@ -22,6 +24,11 @@ public abstract class BaseQuery<T> {
 
     public BaseQuery<T> where(String fieldName, Object value) {
         conditions.put(fieldName, value);
+        return this;
+    }
+
+    public BaseQuery<T> join(String joinTable, String joinField, String baseField) {
+        joins.add("JOIN " + joinTable + " ON " + getTableName() + "." + baseField + " = " + joinTable + "." + joinField);
         return this;
     }
 
@@ -58,6 +65,14 @@ public abstract class BaseQuery<T> {
             return column.name();
         }
         return field.getName();
+    }
+
+    protected String getTableName() {
+        if (type.isAnnotationPresent(Entity.class)) {
+            Entity entity = type.getAnnotation(Entity.class);
+            return entity.tableName();
+        }
+        return type.getSimpleName();
     }
 
 }
