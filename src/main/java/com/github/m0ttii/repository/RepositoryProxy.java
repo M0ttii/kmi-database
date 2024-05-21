@@ -2,9 +2,7 @@ package com.github.m0ttii.repository;
 
 import com.github.m0ttii.orm.DataORM;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,11 +13,10 @@ public class RepositoryProxy<T> implements InvocationHandler {
 
     private final Class<T> repositoryInterface;
     private final Map<String, Method> methods = new HashMap<>();
-    private final DataORM<?> orm;
+    private final Map<Class<?>, DataORM<?>> ormInstances = new HashMap<>();
 
-    public RepositoryProxy(Class<T> repositoryInterface, DataORM<?> orm){
+    public RepositoryProxy(Class<T> repositoryInterface){
         this.repositoryInterface = repositoryInterface;
-        this.orm = orm;
         for (Method method : repositoryInterface.getMethods()){
             methods.put(method.getName(), method);
         }
@@ -27,6 +24,9 @@ public class RepositoryProxy<T> implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        Class<?> entityType = getEntityType();
+        DataORM<?> orm = ormInstances.computeIfAbsent(entityType, DataORM::new);
+
         String methodName = method.getName();
 
         //Handling generic CRUD operations
@@ -57,11 +57,24 @@ public class RepositoryProxy<T> implements InvocationHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T newInstance(Class<T> repositoryInterface, DataORM<?> orm) {
+    public static <T> T newInstance(Class<T> repositoryInterface) {
         return (T) Proxy.newProxyInstance(
                 repositoryInterface.getClassLoader(),
                 new Class<?>[]{repositoryInterface},
-                new RepositoryProxy<>(repositoryInterface, orm)
+                new RepositoryProxy<>(repositoryInterface)
         );
+    }
+
+    private Class<?> getEntityType() {
+        Type[] genericInterfaces = repositoryInterface.getGenericInterfaces();
+        for (Type genericInterface : genericInterfaces) {
+            if (genericInterface instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) genericInterface;
+                if (parameterizedType.getRawType().equals(Repository.class)) {
+                    return (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                }
+            }
+        }
+        throw new IllegalStateException("Could not determine entity type for repository: " + repositoryInterface.getName());
     }
 }
