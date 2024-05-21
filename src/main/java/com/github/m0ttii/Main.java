@@ -19,8 +19,10 @@ public class Main {
         EmployeeRepository employeeRepository = RepositoryProxy.newInstance(EmployeeRepository.class);
 
         try{
-            List<EmployeeEntity> employeeEntities = employeeRepository.findAll();
-            System.out.println(employeeEntities.get(0).name);
+            List<EmployeeEntity> employeeEntities = employeeRepository.findAll().where("name", "Zwei").execute();
+            employeeEntities.forEach(employeeEntity -> {
+                System.out.println(employeeEntity.name + " - " + employeeEntity.position);
+            });
         }catch (Exception ex){
             System.out.println(ex);
         }

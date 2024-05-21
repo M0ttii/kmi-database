@@ -22,6 +22,7 @@ public class RepositoryProxy<T> implements InvocationHandler {
         }
     }
 
+    //Handles method calls made on the dynamic proxy instance and delegates these calls to the appropriate methods in the DataORM instance based on the method name.
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Class<?> entityType = getEntityType();
