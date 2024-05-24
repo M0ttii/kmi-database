@@ -31,6 +31,7 @@ public class FindByIdQuery<T> extends BaseQuery<T> {
             columns.append(getColumnName(field)).append(",");
             if (field.isAnnotationPresent(Id.class)) {
                 idColumn = getColumnName(field);
+                String x = idColumn;
             }
         }
 
@@ -39,22 +40,26 @@ public class FindByIdQuery<T> extends BaseQuery<T> {
             throw new IllegalStateException("No ID column found");
         }
 
-        StringBuilder whereClause = new StringBuilder(" WHERE " + idColumn + " = ?");
-        if (!conditions.isEmpty()) {
-            whereClause.append(" AND ");
-            for (String fieldName : conditions.keySet()) {
-                whereClause.append(fieldName).append(" = ? AND ");
-            }
-            whereClause.setLength(whereClause.length() - 5);
+        conditions.put(idColumn, id);
+
+        StringBuilder whereClause = new StringBuilder(" WHERE ");
+        for (String fieldName : conditions.keySet()) {
+            whereClause.append(fieldName).append(" = ? AND ");
         }
+        whereClause.setLength(whereClause.length() - 5);
+
 
         return "SELECT " + columns + " FROM " + tableName + " " + joinClause.toString() + whereClause.toString();
+    }
+
+    @Override
+    public T findOne() throws ReflectiveOperationException, SQLException {
+        return super.findOne();
     }
 
 
     @Override
     public List<T> execute() throws SQLException, ReflectiveOperationException {
-        conditions.put("id", id); // Ensure ID is part of the conditions
         return super.execute();
     }
 }

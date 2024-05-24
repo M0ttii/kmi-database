@@ -3,6 +3,8 @@ package com.github.m0ttii.orm.query;
 import com.github.m0ttii.DatabaseConnection;
 import com.github.m0ttii.annotations.Column;
 import com.github.m0ttii.annotations.Entity;
+import com.github.m0ttii.annotations.JoinTable;
+import com.github.m0ttii.orm.DataORM;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -34,9 +36,11 @@ public abstract class BaseQuery<T> {
 
     protected abstract String buildSql();
 
+
     public List<T> execute() throws SQLException, ReflectiveOperationException {
         List<T> list = new ArrayList<>();
         String sql = buildSql();
+        String x = sql;
         List<Object> values = new ArrayList<>(conditions.values());
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -51,12 +55,53 @@ public abstract class BaseQuery<T> {
                 Field[] fields = type.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
-                    field.set(obj, rs.getObject(getColumnName(field)));
+                    if (field.isAnnotationPresent(JoinTable.class)) {
+                        JoinTable joinTable = field.getAnnotation(JoinTable.class);
+                        Object joinValue = rs.getObject(joinTable.joinColumn());
+                        if (joinValue != null) {
+                            Object relatedEntity = loadRelatedEntity(field.getType(), joinTable, joinValue);
+                            field.set(obj, relatedEntity);
+                        }
+                    } else {
+                        field.set(obj, rs.getObject(getColumnName(field)));
+                    }
                 }
                 list.add(obj);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return list;
+    }
+
+    public T findOne() throws ReflectiveOperationException, SQLException {
+        List<T> results = execute();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return results.get(0);
+    }
+
+    private Object loadRelatedEntity(Class<?> relatedType, JoinTable joinTable, Object joinValue) throws SQLException, ReflectiveOperationException {
+        DataORM<?> orm = new DataORM<>(relatedType);
+
+        String sql = "SELECT * FROM " + joinTable.name() + " WHERE " + joinTable.referencedColumnName() + " = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, joinValue);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                Object relatedEntity = relatedType.getDeclaredConstructor().newInstance();
+                Field[] fields = relatedType.getDeclaredFields();
+                for (Field field : fields) {
+                    field.setAccessible(true);
+                    field.set(relatedEntity, rs.getObject(getColumnName(field)));
+                }
+                return relatedEntity;
+            }
+        }
+        return null;
     }
 
     protected String getColumnName(Field field) {

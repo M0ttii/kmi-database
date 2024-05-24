@@ -19,12 +19,17 @@ public class Main {
         EmployeeRepository employeeRepository = RepositoryProxy.newInstance(EmployeeRepository.class);
 
         try{
-            List<EmployeeEntity> employeeEntities = employeeRepository.findAll().where("name", "Zwei").execute();
+            EmployeeEntity employeeEntityy = employeeRepository.findAll().findOne();
+            System.out.println(employeeEntityy.name + " - " + employeeEntityy.position + " - " + employeeEntityy.salary + " - " + employeeEntityy.department.name);
+            /*List<EmployeeEntity> employeeEntities = employeeRepository.findAll().execute();
+            System.out.println(employeeEntityy.name + " - " + employeeEntityy.position + " - " + employeeEntityy.salary + " - " + employeeEntityy.department.name);
             employeeEntities.forEach(employeeEntity -> {
-                System.out.println(employeeEntity.name + " - " + employeeEntity.position);
-            });
+                System.out.println(employeeEntity.name + " - " + employeeEntity.position + " - " + employeeEntity.salary + " - " + employeeEntity.department.name);
+            });*/
         }catch (Exception ex){
             System.out.println(ex);
         }
     }
+
+
 }
