@@ -3,6 +3,8 @@ package com.github.m0ttii;
 import com.github.m0ttii.repository.RepositoryProxy;
 import com.github.m0ttii.test.EmployeeEntity;
 import com.github.m0ttii.test.EmployeeRepository;
+import com.github.m0ttii.test.KundeEntity;
+import com.github.m0ttii.test.KundeRepository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,15 +19,12 @@ public class Main {
         Class.forName("com.mysql.cj.jdbc.Driver");
 
         EmployeeRepository employeeRepository = RepositoryProxy.newInstance(EmployeeRepository.class);
+        KundeRepository kundeRepository = RepositoryProxy.newInstance(KundeRepository.class);
 
         try{
-            EmployeeEntity employeeEntityy = employeeRepository.findAll().findOne();
-            System.out.println(employeeEntityy.name + " - " + employeeEntityy.position + " - " + employeeEntityy.salary + " - " + employeeEntityy.department.name);
-            /*List<EmployeeEntity> employeeEntities = employeeRepository.findAll().execute();
-            System.out.println(employeeEntityy.name + " - " + employeeEntityy.position + " - " + employeeEntityy.salary + " - " + employeeEntityy.department.name);
-            employeeEntities.forEach(employeeEntity -> {
-                System.out.println(employeeEntity.name + " - " + employeeEntity.position + " - " + employeeEntity.salary + " - " + employeeEntity.department.name);
-            });*/
+            KundeEntity kundeEntity = kundeRepository.findByName("Adrian");
+            System.out.println(kundeEntity.name);
+
         }catch (Exception ex){
             System.out.println(ex);
         }

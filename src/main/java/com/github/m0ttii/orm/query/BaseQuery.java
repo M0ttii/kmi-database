@@ -82,7 +82,13 @@ public abstract class BaseQuery<T> {
         return results.get(0);
     }
 
-    private Object loadRelatedEntity(Class<?> relatedType, JoinTable joinTable, Object joinValue) throws SQLException, ReflectiveOperationException {
+    private Object loadRelatedEntity(Class<?> joinType, JoinTable joinTable, Object joinValue) throws SQLException, ReflectiveOperationException {
+        DataORM<?> relatedOrm = new DataORM<>(joinType);
+        BaseQuery<?> joinQuery = relatedOrm.findById((Integer) joinValue);
+        return joinQuery.findOne();
+    }
+
+    /*private Object loadRelatedEntity(Class<?> relatedType, JoinTable joinTable, Object joinValue) throws SQLException, ReflectiveOperationException {
         DataORM<?> orm = new DataORM<>(relatedType);
 
         String sql = "SELECT * FROM " + joinTable.name() + " WHERE " + joinTable.referencedColumnName() + " = ?";
@@ -102,7 +108,7 @@ public abstract class BaseQuery<T> {
             }
         }
         return null;
-    }
+    }*/
 
     protected String getColumnName(Field field) {
         if (field.isAnnotationPresent(Column.class)) {
