@@ -23,7 +23,7 @@ public class KundeEntity {
     @Column(name = "telefon")
     public String telefon;
 
-    @JoinTable(name = "adresse", joinColumn = "adresse_id", referencedColumnName = "id")
-    @Column(name = "adresse_id")
+    @JoinTable(name = "adresse", joinColumn = "adresse", referencedColumnName = "id")
+    @Column(name = "adresse")
     public AdresseEntity adresse;
 }

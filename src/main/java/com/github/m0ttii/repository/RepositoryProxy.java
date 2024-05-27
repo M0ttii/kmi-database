@@ -4,6 +4,7 @@ import com.github.m0ttii.orm.DataORM;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 //The RepositoryProxy class is a dynamic proxy handler that enables the use of repository interfaces for
@@ -51,7 +52,11 @@ public class RepositoryProxy<T> implements InvocationHandler {
         if(methodName.startsWith("findBy")){
             String fieldName = methodName.substring(6);
             fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-            return orm.findByField(fieldName, args[0]);
+            if (method.getReturnType().equals(List.class)) {
+                return orm.findByField(fieldName, args[0]).execute();
+            } else {
+                return orm.findByField(fieldName, args[0]).findOne();
+            }
         }
 
         throw new UnsupportedOperationException("Method not implemented: " + methodName);

@@ -25,6 +25,9 @@ public class Main {
             KundeEntity kundeEntity = kundeRepository.findByName("Adrian");
             System.out.println(kundeEntity.name);
 
+//                EmployeeEntity employeeEntitie = employeeRepository.findById(1).findOne();
+//                System.out.println(employeeEntitie.department.name);
+
         }catch (Exception ex){
             System.out.println(ex);
         }

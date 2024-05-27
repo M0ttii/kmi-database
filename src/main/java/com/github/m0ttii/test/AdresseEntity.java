@@ -18,7 +18,7 @@ public class AdresseEntity {
     public String hausnummer;
 
     @Column(name = "postleitzahl")
-    public double postleitzahl;
+    public String postleitzahl;
 
     @Column(name = "stadt")
     public String stadt;

@@ -4,7 +4,9 @@ import com.github.m0ttii.DatabaseConnection;
 import com.github.m0ttii.annotations.Column;
 import com.github.m0ttii.annotations.Entity;
 import com.github.m0ttii.annotations.Id;
+import com.github.m0ttii.orm.query.BaseQuery;
 import com.github.m0ttii.orm.query.FindAllQuery;
+import com.github.m0ttii.orm.query.FindByFieldQuery;
 import com.github.m0ttii.orm.query.FindByIdQuery;
 
 import java.lang.reflect.Field;
@@ -45,40 +47,8 @@ public class DataORM<T> {
 
     //Generic method to find an object by a generic field
     //All "findBy..." methods defined in the Repository invoke this method with the field name after "findBy"
-    public List<T> findByField(String fieldName, Object value) throws SQLException, ReflectiveOperationException {
-        List<T> list = new ArrayList<>();
-        String tableName = getTableName();
-        Field[] fields = type.getDeclaredFields();
-        StringBuilder columns = new StringBuilder();
-        String targetColumn = null;
-        for (Field field : fields) {
-            columns.append(getColumnName(field)).append(",");
-            if (field.getName().equals(fieldName)) {
-                targetColumn = getColumnName(field);
-            }
-        }
-        columns.setLength(columns.length() - 1);
-
-        if (targetColumn == null) {
-            throw new IllegalStateException("No column found for field: " + fieldName);
-        }
-
-        String sql = "SELECT " + columns + " FROM " + tableName + " WHERE " + targetColumn + " = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setObject(1, value);
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                T obj = type.getDeclaredConstructor().newInstance();
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                    field.set(obj, rs.getObject(getColumnName(field)));
-                }
-                list.add(obj);
-            }
-        }
-        return list;
+    public BaseQuery<T> findByField(String fieldName, Object value) {
+        return new FindByFieldQuery<>(type, fieldName, value);
     }
 
     //Inserts a new object into the database
