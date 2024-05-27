@@ -3,6 +3,7 @@ package com.github.m0ttii.orm.query;
 import com.github.m0ttii.DatabaseConnection;
 import com.github.m0ttii.annotations.Column;
 import com.github.m0ttii.annotations.Entity;
+import com.github.m0ttii.annotations.JoinColumn;
 import com.github.m0ttii.annotations.JoinTable;
 import com.github.m0ttii.orm.DataORM;
 
@@ -40,7 +41,6 @@ public abstract class BaseQuery<T> {
     public List<T> execute() throws SQLException, ReflectiveOperationException {
         List<T> list = new ArrayList<>();
         String sql = buildSql();
-        String x = sql;
         List<Object> values = new ArrayList<>(conditions.values());
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -55,11 +55,11 @@ public abstract class BaseQuery<T> {
                 Field[] fields = type.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
-                    if (field.isAnnotationPresent(JoinTable.class)) {
-                        JoinTable joinTable = field.getAnnotation(JoinTable.class);
-                        Object joinValue = rs.getObject(joinTable.joinColumn());
+                    if (field.isAnnotationPresent(JoinColumn.class)) {
+                        JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+                        Object joinValue = rs.getObject(joinColumn.name());
                         if (joinValue != null) {
-                            Object relatedEntity = loadRelatedEntity(field.getType(), joinTable, joinValue);
+                            Object relatedEntity = loadRelatedEntity(field.getType(), joinColumn, joinValue);
                             field.set(obj, relatedEntity);
                         }
                     } else {
@@ -74,6 +74,19 @@ public abstract class BaseQuery<T> {
         return list;
     }
 
+    public int save() throws SQLException, IllegalAccessException {
+        String sql = buildSql();
+        List<Object> values = new ArrayList<>(conditions.values());
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < values.size(); i++) {
+                pstmt.setObject(i + 1, values.get(i));
+            }
+            return pstmt.executeUpdate();
+        }
+    }
+
     public T findOne() throws ReflectiveOperationException, SQLException {
         List<T> results = execute();
         if (results.isEmpty()) {
@@ -82,7 +95,7 @@ public abstract class BaseQuery<T> {
         return results.get(0);
     }
 
-    private Object loadRelatedEntity(Class<?> joinType, JoinTable joinTable, Object joinValue) throws SQLException, ReflectiveOperationException {
+    private Object loadRelatedEntity(Class<?> joinType, JoinColumn joinColumn, Object joinValue) throws SQLException, ReflectiveOperationException {
         DataORM<?> relatedOrm = new DataORM<>(joinType);
         BaseQuery<?> joinQuery = relatedOrm.findById((Integer) joinValue);
         return joinQuery.findOne();

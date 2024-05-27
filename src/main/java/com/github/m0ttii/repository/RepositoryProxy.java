@@ -3,6 +3,7 @@ package com.github.m0ttii.repository;
 import com.github.m0ttii.orm.DataORM;
 
 import java.lang.reflect.*;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,40 +27,45 @@ public class RepositoryProxy<T> implements InvocationHandler {
     //Handles method calls made on the dynamic proxy instance and delegates these calls to the appropriate methods in the DataORM instance based on the method name.
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Class<?> entityType = getEntityType();
-        DataORM<?> orm = ormInstances.computeIfAbsent(entityType, DataORM::new);
+        try {
+            Class<?> entityType = getEntityType();
+            DataORM<?> orm = ormInstances.computeIfAbsent(entityType, k -> new DataORM<>(entityType));
 
-        String methodName = method.getName();
+            String methodName = method.getName();
 
-        //Handling generic CRUD operations
-        switch (methodName){
-            case "insert":
-                orm.insert(args[0]);
-                return null;
-            case "findById":
-                return orm.findById((Integer) args[0]);
-            case "findAll":
-                return orm.findAll();
-            case "update":
-                orm.update(args[0]);
-                return null;
-            case "delete":
-                orm.delete((Integer) args[0]);
-                return null;
-        }
-
-        //Handling custom methods (e.g. findByName)
-        if(methodName.startsWith("findBy")){
-            String fieldName = methodName.substring(6);
-            fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-            if (method.getReturnType().equals(List.class)) {
-                return orm.findByField(fieldName, args[0]).execute();
-            } else {
-                return orm.findByField(fieldName, args[0]).findOne();
+            //Handling generic CRUD operations
+            switch (methodName){
+                case "insert":
+                    orm.insert(args[0]);
+                    return null;
+                case "findById":
+                    return orm.findById((Integer) args[0]);
+                case "findAll":
+                    return orm.findAll();
+                case "update":
+                    orm.update(args[0]);
+                    return null;
+                case "delete":
+                    orm.delete((Integer) args[0]);
+                    return null;
             }
-        }
 
-        throw new UnsupportedOperationException("Method not implemented: " + methodName);
+            //Handling custom methods (e.g. findByName)
+            if(methodName.startsWith("findBy")){
+                String fieldName = methodName.substring(6);
+                fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+                if (method.getReturnType().equals(List.class)) {
+                    return orm.findByField(fieldName, args[0]).execute();
+                } else {
+                    return orm.findByField(fieldName, args[0]).findOne();
+                }
+            }
+
+            throw new UnsupportedOperationException("Method not implemented: " + methodName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

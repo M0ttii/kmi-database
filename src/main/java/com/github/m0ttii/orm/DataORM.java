@@ -4,10 +4,7 @@ import com.github.m0ttii.DatabaseConnection;
 import com.github.m0ttii.annotations.Column;
 import com.github.m0ttii.annotations.Entity;
 import com.github.m0ttii.annotations.Id;
-import com.github.m0ttii.orm.query.BaseQuery;
-import com.github.m0ttii.orm.query.FindAllQuery;
-import com.github.m0ttii.orm.query.FindByFieldQuery;
-import com.github.m0ttii.orm.query.FindByIdQuery;
+import com.github.m0ttii.orm.query.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -53,31 +50,7 @@ public class DataORM<T> {
 
     //Inserts a new object into the database
     public void insert(Object obj) throws SQLException, IllegalAccessException {
-        String tableName = getTableName();
-        Field[] fields = type.getDeclaredFields();
-        StringBuilder columns = new StringBuilder();
-        StringBuilder values = new StringBuilder();
-        for (Field field : fields) {
-            if (!field.isAnnotationPresent(Id.class)) {
-                columns.append(getColumnName(field)).append(",");
-                values.append("?,");
-            }
-        }
-        columns.setLength(columns.length() - 1);
-        values.setLength(values.length() - 1);
-
-        String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            int index = 1;
-            for (Field field : fields) {
-                if (!field.isAnnotationPresent(Id.class)) {
-                    field.setAccessible(true);
-                    pstmt.setObject(index++, field.get(obj));
-                }
-            }
-            pstmt.executeUpdate();
-        }
+        new InsertQuery<>(type, obj).save();
     }
 
     //Finds an object by id
@@ -87,63 +60,12 @@ public class DataORM<T> {
 
     //Updates an object
     public void update(Object obj) throws SQLException, IllegalAccessException {
-        String tableName = getTableName();
-        Field[] fields = type.getDeclaredFields();
-        StringBuilder columns = new StringBuilder();
-        String idColumn = null;
-        Object idValue = null;
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(Id.class)) {
-                idColumn = getColumnName(field);
-                field.setAccessible(true);
-                idValue = field.get(obj);
-            } else {
-                columns.append(getColumnName(field)).append(" = ?,");
-            }
-        }
-        columns.setLength(columns.length() - 1); // Entfernt das letzte Komma
-
-        if (idColumn == null) {
-            throw new IllegalStateException("No ID column found");
-        }
-
-        String sql = "UPDATE " + tableName + " SET " + columns + " WHERE " + idColumn + " = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            int index = 1;
-            for (Field field : fields) {
-                if (!field.isAnnotationPresent(Id.class)) {
-                    field.setAccessible(true);
-                    pstmt.setObject(index++, field.get(obj));
-                }
-            }
-            pstmt.setObject(index, idValue);
-            pstmt.executeUpdate();
-        }
+        new UpdateQuery<>(type, obj).save();
     }
 
     //Deletes an object
-    public void delete(int id) throws SQLException {
-        String tableName = getTableName();
-        Field[] fields = type.getDeclaredFields();
-        String idColumn = null;
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(Id.class)) {
-                idColumn = getColumnName(field);
-                break;
-            }
-        }
-
-        if (idColumn == null) {
-            throw new IllegalStateException("No ID column found");
-        }
-
-        String sql = "DELETE FROM " + tableName + " WHERE " + idColumn + " = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-        }
+    public void delete(Object id) throws SQLException {
+        new DeleteQuery<>(type, id).save();
     }
 
     public FindAllQuery<T> findAll() {

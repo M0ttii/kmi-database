@@ -1,10 +1,7 @@
 package com.github.m0ttii;
 
 import com.github.m0ttii.repository.RepositoryProxy;
-import com.github.m0ttii.test.EmployeeEntity;
-import com.github.m0ttii.test.EmployeeRepository;
-import com.github.m0ttii.test.KundeEntity;
-import com.github.m0ttii.test.KundeRepository;
+import com.github.m0ttii.test.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,10 +17,16 @@ public class Main {
 
         EmployeeRepository employeeRepository = RepositoryProxy.newInstance(EmployeeRepository.class);
         KundeRepository kundeRepository = RepositoryProxy.newInstance(KundeRepository.class);
+        //AdresseRepository adresseRepository = RepositoryProxy.newInstance(AdresseRepository.class);
 
         try{
-            KundeEntity kundeEntity = kundeRepository.findByName("Adrian");
+
+            //AdresseEntity adresseEntity = adresseRepository.findById(1).findOne();
+            KundeEntity kundeEntity = kundeRepository.findById(1).findOne();
             System.out.println(kundeEntity.name);
+            kundeEntity.name = "Max Mustermann";
+            kundeRepository.update(kundeEntity);
+
 
 //                EmployeeEntity employeeEntitie = employeeRepository.findById(1).findOne();
 //                System.out.println(employeeEntitie.department.name);

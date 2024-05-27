@@ -25,4 +25,8 @@ public class AdresseEntity {
 
     @Column(name = "land")
     public String land;
+
+    public Integer getId(){
+        return id;
+    }
 }

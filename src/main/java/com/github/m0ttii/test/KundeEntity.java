@@ -1,9 +1,6 @@
 package com.github.m0ttii.test;
 
-import com.github.m0ttii.annotations.Column;
-import com.github.m0ttii.annotations.Entity;
-import com.github.m0ttii.annotations.Id;
-import com.github.m0ttii.annotations.JoinTable;
+import com.github.m0ttii.annotations.*;
 
 @Entity(tableName = "kunde")
 public class KundeEntity {
@@ -23,7 +20,9 @@ public class KundeEntity {
     @Column(name = "telefon")
     public String telefon;
 
-    @JoinTable(name = "adresse", joinColumn = "adresse", referencedColumnName = "id")
     @Column(name = "adresse")
+    public Integer adresseId;  // Feld für die Fremdschlüssel-ID
+
+    @JoinColumn(name = "adresse", referencedColumnName = "id")
     public AdresseEntity adresse;
 }
