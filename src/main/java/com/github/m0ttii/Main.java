@@ -17,15 +17,22 @@ public class Main {
 
         EmployeeRepository employeeRepository = RepositoryProxy.newInstance(EmployeeRepository.class);
         KundeRepository kundeRepository = RepositoryProxy.newInstance(KundeRepository.class);
-        //AdresseRepository adresseRepository = RepositoryProxy.newInstance(AdresseRepository.class);
+        AdresseRepository adresseRepository = RepositoryProxy.newInstance(AdresseRepository.class);
 
         try{
 
-            //AdresseEntity adresseEntity = adresseRepository.findById(1).findOne();
-            KundeEntity kundeEntity = kundeRepository.findById(1).findOne();
-            System.out.println(kundeEntity.name);
-            kundeEntity.name = "Max Mustermann";
+            AdresseEntity adresseEntity = adresseRepository.findAll().where("stadt", "Berlin");
+            KundeEntity kundeEntity = new KundeEntity();
+            kundeEntity.name = "Kunde";
+            kundeRepository.insert(kundeEntity);
+
+            kundeEntity.adresse = adresseEntity;
             kundeRepository.update(kundeEntity);
+            //AdresseEntity adresseEntity = adresseRepository.findById(1).findOne();
+//            KundeEntity kundeEntity = kundeRepository.findById(1).findOne();
+//            System.out.println(kundeEntity.name);
+//            kundeEntity.adresse.stadt = "Berlin2";
+//            kundeRepository.update(kundeEntity);
 
 
 //                EmployeeEntity employeeEntitie = employeeRepository.findById(1).findOne();
