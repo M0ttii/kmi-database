@@ -1,4 +1,4 @@
-package com.github.m0ttii.orm.query;
+package com.github.m0ttii.database.orm.query;
 
 import java.lang.reflect.Field;
 

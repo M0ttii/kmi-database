@@ -1,7 +1,6 @@
-package com.github.m0ttii.orm.query;
+package com.github.m0ttii.database.orm.query;
 
-import com.github.m0ttii.annotations.Entity;
-import com.github.m0ttii.annotations.Id;
+import com.github.m0ttii.database.annotations.Id;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;

@@ -1,10 +1,7 @@
-package com.github.m0ttii.repository;
+package com.github.m0ttii.database.repository;
 
-import com.github.m0ttii.orm.DataORM;
-import com.github.m0ttii.orm.query.FindAllQuery;
-import com.github.m0ttii.orm.query.FindByIdQuery;
-
-import java.util.List;
+import com.github.m0ttii.database.orm.query.FindAllQuery;
+import com.github.m0ttii.database.orm.query.FindByIdQuery;
 
 //Generic Repository interface that provides the basic CRUD operations
 public interface Repository <T, ID>{

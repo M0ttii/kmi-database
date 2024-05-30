@@ -1,18 +1,11 @@
-package com.github.m0ttii.orm;
+package com.github.m0ttii.database.orm;
 
-import com.github.m0ttii.DatabaseConnection;
-import com.github.m0ttii.annotations.Column;
-import com.github.m0ttii.annotations.Entity;
-import com.github.m0ttii.annotations.Id;
-import com.github.m0ttii.orm.query.*;
+import com.github.m0ttii.database.annotations.Column;
+import com.github.m0ttii.database.annotations.Entity;
+import com.github.m0ttii.database.orm.query.*;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 //DataORM provides methods to interact with the Database.
 public class DataORM<T> {

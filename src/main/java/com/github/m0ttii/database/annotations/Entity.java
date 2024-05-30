@@ -1,4 +1,4 @@
-package com.github.m0ttii.annotations;
+package com.github.m0ttii.database.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

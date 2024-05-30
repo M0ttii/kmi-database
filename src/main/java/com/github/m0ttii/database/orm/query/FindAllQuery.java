@@ -1,6 +1,4 @@
-package com.github.m0ttii.orm.query;
-
-import com.github.m0ttii.annotations.Entity;
+package com.github.m0ttii.database.orm.query;
 
 import java.lang.reflect.Field;
 

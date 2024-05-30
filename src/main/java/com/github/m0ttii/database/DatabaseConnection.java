@@ -1,4 +1,4 @@
-package com.github.m0ttii;
+package com.github.m0ttii.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

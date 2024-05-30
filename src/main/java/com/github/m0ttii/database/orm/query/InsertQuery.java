@@ -1,6 +1,6 @@
-package com.github.m0ttii.orm.query;
+package com.github.m0ttii.database.orm.query;
 
-import com.github.m0ttii.DatabaseConnection;
+import com.github.m0ttii.database.DatabaseConnection;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
