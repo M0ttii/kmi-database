@@ -1,4 +1,4 @@
-### Diese ORM wurde im Rahmen eines Universitätsprojekts entwickelt. Es ist keineswegs produktionsreif, vollständig oder performant und dient ausschließlich zu Lernzwecken.
+### Dieses Framework wurde im Rahmen eines Universitätsprojekts entwickelt. Es ist keineswegs produktionsreif, vollständig oder performant und dient ausschließlich zu Lernzwecken.
 Ein Object-Relational Mapping Framework (ORM) ist ein Programmierkonzept, das zur Vereinfachung der Datenbankinteraktion verwendet wird. Es ermöglicht Entwicklern, Datenbankabfragen und -operationen in der jeweiligen Programmiersprache durchzuführen, ohne direkt SQL schreiben zu müssen. Ein ORM übersetzt die Objekte im Code in Datenbanktabellen und umgekehrt, wodurch die Datenbankzugriffe abstrahiert und vereinfacht werden. Dadurch wird die Entwicklung effizienter und der Code leichter wartbar, da komplexe SQL-Abfragen in verständlichere Programmanweisungen umgewandelt werden.
 
 ## 1. Datenbankverbindung konfigurieren
