@@ -1,6 +1,8 @@
 package com.github.m0ttii.database.orm.query;
 
 import com.github.m0ttii.database.DatabaseConnection;
+import com.github.m0ttii.database.annotations.Id;
+import com.github.m0ttii.database.annotations.JoinColumn;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -50,10 +52,30 @@ public class InsertQuery<T> extends BaseQuery<T> {
             for (Field field : fields) {
                 field.setAccessible(true);
                 if (field.get(entity) != null) {
-                    pstmt.setObject(index++, field.get(entity));
+                    if (field.isAnnotationPresent(JoinColumn.class)) {
+                        JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+                        Object relatedEntity = field.get(entity);
+                        if (relatedEntity != null) {
+                            Field idField = getIdField(relatedEntity.getClass());
+                            idField.setAccessible(true);
+                            Object joinValue = idField.get(relatedEntity);
+                            pstmt.setObject(index++, joinValue);
+                        }
+                    } else {
+                        pstmt.setObject(index++, field.get(entity));
+                    }
                 }
             }
             return pstmt.executeUpdate();
         }
+    }
+
+    private Field getIdField(Class<?> relatedClass) {
+        for (Field field : relatedClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) {
+                return field;
+            }
+        }
+        throw new RuntimeException("No ID field found in related class: " + relatedClass.getName());
     }
 }

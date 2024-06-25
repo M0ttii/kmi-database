@@ -8,7 +8,7 @@ public class FindByFieldQuery<T> extends BaseQuery<T> {
 
     public FindByFieldQuery(Class<T> type, String fieldName, Object value) {
         super(type);
-        this.fieldName = fieldName;
+        this.fieldName = resolveFieldName(fieldName);
         this.value = value;
         conditions.put(fieldName, value);
     }
@@ -17,7 +17,12 @@ public class FindByFieldQuery<T> extends BaseQuery<T> {
     protected String buildSql() {
         String tableName = getTableName();
         StringBuilder columns = new StringBuilder();
+        StringBuilder joinClause = new StringBuilder();
         Field[] fields = type.getDeclaredFields();
+
+        for (String join : joins) {
+            joinClause.append(join).append(" ");
+        }
 
         for (Field field : fields) {
             columns.append(getColumnName(field)).append(",");
@@ -28,5 +33,14 @@ public class FindByFieldQuery<T> extends BaseQuery<T> {
         whereClause.append(fieldName).append(" = ?");
 
         return "SELECT " + columns + " FROM " + tableName + whereClause.toString();
+    }
+
+    private String resolveFieldName(String fieldName) {
+        for (Field field : type.getDeclaredFields()) {
+            if (field.getName().equals(fieldName) || getColumnName(field).equals(fieldName)) {
+                return getColumnName(field);
+            }
+        }
+        throw new IllegalArgumentException("No field found with name: " + fieldName);
     }
 }
