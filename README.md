@@ -1,7 +1,13 @@
-### Dieses Framework wurde im Rahmen eines Universitätsprojekts entwickelt. Es ist keineswegs produktionsreif, vollständig oder performant und dient ausschließlich zu Lernzwecken.
+# ORM-Framework
+
+Dieses Framework wurde im Rahmen eines Universitätsprojekts entwickelt. Es ist keineswegs produktionsreif, vollständig oder performant und dient ausschließlich zu Lernzwecken.
+
+## Was ist ein ORM?
+
 Ein Object-Relational Mapping Framework (ORM) ist ein Programmierkonzept, das zur Vereinfachung der Datenbankinteraktion verwendet wird. Es ermöglicht Entwicklern, Datenbankabfragen und -operationen in der jeweiligen Programmiersprache durchzuführen, ohne direkt SQL schreiben zu müssen. Ein ORM übersetzt die Objekte im Code in Datenbanktabellen und umgekehrt, wodurch die Datenbankzugriffe abstrahiert und vereinfacht werden. Dadurch wird die Entwicklung effizienter und der Code leichter wartbar, da komplexe SQL-Abfragen in verständlichere Programmanweisungen umgewandelt werden.
 
 ## 1. Datenbankverbindung konfigurieren
+
 Tragt euren Nutzernamen und Ihr Passwort in die `DatabaseConnection` Klasse ein, um die Verbindung zur Datenbank herzustellen.
 
 ```java
@@ -48,6 +54,7 @@ public class KundeEntity {
 ```
 
 ### Beispiel für zusammengesetzte Primärschlüssel
+
 ```java
 @Entity(tableName = "lagerbestand")
 @CompositeKey(keyColumns = {"lager_id", "artikel_nr"})
@@ -98,7 +105,8 @@ Das Repository bietet folgende Standardmethoden an:
 - `delete(ID id)`: Löscht eine Entität anhand ihrer ID.
 
 ### Hilfsmethoden
-Um WHERE Bedingungen oder JOIN Anweisungen manuell benutzten zu können, gibt es `.where()` und `.join()` Methoden. Diese können bei allen `find...()` Methoden benutzt werden.
+
+Um WHERE-Bedingungen oder JOIN-Anweisungen manuell nutzen zu können, gibt es die `.where()` und `.join()` Methoden. Diese können bei allen `find...()` Methoden benutzt werden.
 
 ### Beispiel: Einfache Abfrage
 
@@ -115,17 +123,26 @@ kundeRepository.insert(kundeEntity);
 ```
 
 ### Beispiel: Find mit where
+
 ```java
 AdresseEntity adresseEntity = adresseRepository.findAll().where("stadt", "Berlin");
 ```
 
 ### Beispiel: Zusammengesetzte Primärschlüssel
+
 ```java
 LagerbestandRepository lagerbestandRepository = RepositoryProxy.newInstance(LagerbestandRepository.class);
 Map<String, Object> compositeKeys = new HashMap<>();
 compositeKeys.put("artikel_nr", "1");
 compositeKeys.put("lager_nr", "1");
 Lagerbestand lagerbestand = lagerbestandRepository.findById(compositeKeys).findOne();
+```
+
+### Beispiel: Custom Query
+
+```java
+String sql = "SELECT * FROM kunde WHERE name = ?";
+KundeEntity kunde = kundeRepository.executeCustomQuery(sql, "Klaus");
 ```
 
 ## 6. Verwendung von Java Dynamic Proxy
@@ -143,3 +160,5 @@ Nun kannst du Kunden anhand des Namens finden:
 ```java
 KundeEntity kundeEntity = kundeRepository.findByName("Kunde");
 ```
+
+Diese formatierte und strukturierte Anleitung soll Ihnen helfen, das ORM-Framework besser zu verstehen und effizient zu nutzen.
